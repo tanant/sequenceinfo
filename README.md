@@ -1,37 +1,56 @@
-## Welcome to GitHub Pages
+##SequenceInfo
 
-You can use the [editor on GitHub](https://github.com/tanant/sequenceinfo/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+The `SequenceInfo` package is intended to provide a relatively simple, well documented, flexible set of tools to solve the problem of compacting a large volume of file paths into a number of compact representations of sequences.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+e.g. : the set of files foo.123.png, foo.124.png, foo.125.png, foo.022.png would all belong to a sequence that could be expressed as foo.###.png [22, 123-125].
 
-### Markdown
+###Architectural overview
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+There are two major modules: `Splitter`, `Sequencer` 
 
-```markdown
-Syntax highlighted code block
+####Splitter 
+Responsible for taking in a string, and conforming it into a head/digit/tail) triple
 
-# Header 1
-## Header 2
-### Header 3
+- configured by regexes that are stacked in precendence order
+- match patterns themeselves must define three groups
+- contains no state information, strightly a function
+- will fallback to a default regex match of {.*}/None/None
+- module should have precanned match patterns and tests to make sure they are precisely targeted
+   
+####Sequencer 
+- responsible for taking a stream of splitter-conformed items and building an internal state to represent these
+- can be asked to 'report' on the sequences that are known in the form of Sequence objects
+- can (should be) fed with additional paths as it goes. Could become a memory hog :|
+- is responsible for coming up with the padding rule. 
 
-- Bulleted
-- List
+####Sequence
+- not sure if this is needed, but is the concept of a sequence. Has the pattern, knows how to convert the pattern to different padding formats,
+- queries avail: first, last, padding, compact repr, frames, hasFrame(), expandtofullfrominternal, expandtofullfromexplicit, expandfrom frame
 
-1. Numbered
-2. List
+####Preprocessing
+- the `Splitter` expects to be fed a single string, so we should generate
 
-**Bold** and _Italic_ and `Code` text
+####Sources
+- the `Preprocessor` just cares about mangling strings in a way that regexs might not be able to do (routing to different Sequencers for example)
 
-[Link](url) and ![Image](src)
+
+###Typical Usage
+
+would envisage this kind of thing
+```
+si = SequenceInfo()
+# configure, for example si.setPattern("blah")
+for root, dirs, files in os.walk(path):
+    si.add([os.path.join(root,x) for x in files])   # accepts any iterable to digest
+    
+sequences = si.sequences()
+print si.num_sequences
+print sequences[0].first
+print sequences[0].last
+print str(sequences[0])  # blah.foo.####.exr [1-10,13-14x2]
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+with additional manip of add/remove/repr items
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/tanant/sequenceinfo/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+Would be nice for Sequencers to be addable themselves so you don't have to worry about making multiples and tracking them (it'd be an expensive op otherwise to unpack and repack the sequence..)
+>>>>>>> Add first draft of project readme
