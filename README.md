@@ -53,4 +53,6 @@ print str(sequences[0])  # blah.foo.####.exr [1-10,13-14x2]
 with additional manip of add/remove/repr items
 
 Would be nice for Sequencers to be addable themselves so you don't have to worry about making multiples and tracking them (it'd be an expensive op otherwise to unpack and repack the sequence..)
->>>>>>> Add first draft of project readme
+
+
+
